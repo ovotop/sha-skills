@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+*.swp
+*~
+
+# OpenSpec 插件自动生成（skills/commands），不入库
+.opencode/
+
+# 本地编排状态 / 会话插件数据
+.sisyphus/
+conversations/
+
+# 评估工作区产出（临时运行数据，仅保留说明与 evals 定义）
+*-workspace/iteration-*/
