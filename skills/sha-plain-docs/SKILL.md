@@ -65,7 +65,7 @@ python3 scripts/check_plain.py <文档> [--lang zh|en] [--json]
 
 ## 参考文件
 
-- `references/rules-zh.md`：中文受控写作全表（复制自 `docs/rules.md`，含混排标点细则与 SCQA→文档类型映射）。**写中文文档前必读**。
+- `references/rules-zh.md`：中文受控写作全表（**规则权威源**；`docs/rules.md` 为展示副本）。**写中文文档前必读**。
 - `references/rules-en.md`：英文精简 STE 方向性规则（长英文文档或要求更严时读）。
 - `references/avoid-words.md`：黑话、机械直译、冗余套话、指代词全集；`check_plain.py` 读取此表。
 - `scripts/check_plain.py`：确定性 lint。退出码 0=无违规，1=有违规，2=用法错误。
