@@ -23,8 +23,6 @@ NORMATIVE_ZH = ["必须", "不得", "禁止"]
 NORMATIVE_EN = ["must"]
 SOURCE_STEMS = ["根据", "依据", "来自", "显示", "表明", "报告", "文档", "监控", "日志", "测试", "实验", "测量", "数据", "统计", "反馈", "引用", "据"]
 DROPPED_MARKERS = ["仅", "不得", "除非", "只有", "除外", "注意", "警告", "限制", "不能", "禁止"]
-HALFWIDTH_PUNCT = ",.;:?!("
-FULLWIDTH_AFTER_DIGIT = "，。、；：？！）"
 
 CODE_SPAN_RE = re.compile(r"`+[^`\n]*`+")
 URL_RE = re.compile(r"https?://[^\s,，。；：？！()<>]+|(?:^|\s)(?:/[\w.\-]+){2,}")
@@ -225,17 +223,10 @@ def check_punctuation(lines, lang, findings):
             continue
         masked = item["masked"]
         for index, ch in enumerate(masked):
-            if ch in HALFWIDTH_PUNCT:
-                before = masked[index - 1] if index > 0 else ""
-                after = masked[index + 1] if index + 1 < len(masked) else ""
-                if is_cjk(before) or is_cjk(after):
-                    findings.append(_finding("halfwidth_punctuation", "violation", item["no"], f"{before}{ch}{after}", "中文正文请使用全角标点"))
             if is_cjk(ch):
                 after = masked[index + 1] if index + 1 < len(masked) else ""
                 if after and after.isascii() and after.isalnum():
                     findings.append(_finding("missing_cjk_latin_space", "violation", item["no"], f"{ch}{after}", "中文与英文/数字之间请加一个空格"))
-        for match in re.finditer(r"\d\s+[" + FULLWIDTH_AFTER_DIGIT + r"]", masked):
-            findings.append(_finding("extra_space_before_punct", "violation", item["no"], match.group(0), "数字与全角标点之间不要加空格"))
 
 
 def normalize_for_compare(text: str) -> str:
