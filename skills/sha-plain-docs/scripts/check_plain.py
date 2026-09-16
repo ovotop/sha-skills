@@ -204,10 +204,7 @@ def check_facts(lines, lang, greenfield, findings):
             sentence = piece.strip()
             if not sentence:
                 continue
-            if normative:
-                norm_hits = [m.group(0) for m in normative.finditer(sentence)]
-            else:
-                norm_hits = [w for w in NORMATIVE_ZH if w in sentence]
+            norm_hits = [m.group(0) for m in normative.finditer(sentence)] if normative else [w for w in NORMATIVE_ZH if w in sentence]
             for hit in dict.fromkeys(norm_hits):
                 findings.append(_finding("normative_modality", "warning", item["no"], sentence, f"规范型情态「{hit}」是要求而非事实断言，默认告警、不需要来源标记；不得新增原稿没有的要求"))
             hits = [m.group(0) for m in strong.finditer(sentence)] if strong else [w for w in STRONG_ZH if w in sentence]
