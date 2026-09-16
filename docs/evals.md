@@ -71,3 +71,23 @@
 - **未跑 eval-viewer**（用户确认精简收尾）：`generate_review.py` 需要浏览器/静态 HTML 评审页；结果直接以 benchmark + 本文件呈现。
 - 未做第三轮迭代：边际收益递减（iteration-2 发现的新缺陷"标题复述正文"已用 1 行修复 + 1 次干净复跑验证）。
 - 1/24 运行（docs eval-6 with_skill 首跑）产出空文件，属**评测基础设施失败**，已重跑，非 skill 缺陷。
+
+## followup（2026-09-16，change `sha-plain-skills-followup`）
+
+归档后复盘处置了 4 个遗留问题：
+
+| # | 问题 | 处置 |
+|---|---|---|
+| P1 | check_facts 把规范型情态（必须/不得/禁止）误报为无来源强断言 | **拆出 `normative_modality` 类别，默认告警（warning）**；事实型词表（一定/绝对/必然/肯定/确定…）保持硬查。用户拍板。需 spec 级变更（`sha-plain-skills-followup`） |
+| P2 | talk 在 OpenCode 下无机制保证"仅用户触发"（唯一误触发「没听懂，讲清楚点」） | **用户 2026-09-16 拍板：沿用 wait-wait 模式，不做 ClaudeCode/OpenCode 特殊处理**。`disable-model-invocation` 保留（Claude Code 一等支持），description 保持人面向无触发词；OpenCode 无法机制强制，接受暴露面。归档 change 为历史快照不改动，本决定记录在此 |
+| P3 | iteration-3 残留：标题已判断句化，但出现"空壳引导句 + 标题回显" | 结构护栏④扩展：空壳引导句（"如下/以下"式）禁用 + 标题已给判断时正文不复述标题（直接写依据/条件/操作/后果） |
+| P4 | eval 期望措辞过严：`invalid configuration entries` 是正常形容词 | docs eval-6 期望改为"bare 状态标签单独成句才算违规"（talk eval-6 同款修正）；新增 talk eval-7「未新增事实」定向用例（对应 eval-4 iteration-2 凭空出现"产品"的缺陷） |
+
+复跑结果（iteration-4，with_skill 单配置，复用 iteration-1 baseline——护栏/期望改动不影响无技能配置）：
+
+| 用例 | 机械层（check_plain.py） | 语义层（docs rubric 逐条核） | 结论 |
+|---|---|---|---|
+| docs eval-3 改写保警告 | exit 0，**0 violations**（1 条 `normative_modality` warning 为 P1 预期）；`--source` 删改对比无 dropped_warning | 核心三问过；护栏①②④过——标题=判断句、无空壳引导句、无条目复述标题、两条限制保留 | **P3 修复验证通过**（iteration-3 的"空壳引导句+标题回显"残留未再出现） |
+| docs eval-6 错误提示 | exit 0，0 violations（绿场 `--greenfield`，0 warnings） | `Invalid parameter: 400` 仅作为原消息引用，输出为展开模板（参数名+错误码+下一步），无「无效的参数」机械直译 | **P4 期望修正验证通过**（bare 标签单独成句才算违规的新边界成立） |
+
+**触发面影响**：P1 让改写场景的规范句（"用户必须配置超时时间"）不再被迫加来源标记；"警告/限制/例外保护性保留"与 `--source` 删改对比不受影响（D-F-1 边界：新增要求的语义层兜底不变）。

@@ -17,8 +17,10 @@ from pathlib import Path
 
 CJK_RANGES = ((0x4E00, 0x9FFF), (0x3400, 0x4DBF), (0xF900, 0xFAFF), (0x20000, 0x2FFFF))
 CJK_CLASS = r"\u4e00-\u9fff\u3400-\u4dbf\uf900-\ufaff"
-STRONG_ZH = ["一定", "必须", "绝对", "必定", "必然", "肯定", "显然", "无疑", "确实", "确定", "从不", "总是", "永远"]
-STRONG_EN = ["must", "always", "never", "definitely", "certainly", "obviously", "proven"]
+STRONG_ZH = ["一定", "绝对", "必定", "必然", "肯定", "显然", "无疑", "确实", "确定", "从不", "总是", "永远"]
+STRONG_EN = ["always", "never", "definitely", "certainly", "obviously", "proven"]
+NORMATIVE_ZH = ["必须", "不得", "禁止"]
+NORMATIVE_EN = ["must"]
 SOURCE_STEMS = ["根据", "依据", "来自", "显示", "表明", "报告", "文档", "监控", "日志", "测试", "实验", "测量", "数据", "统计", "反馈", "引用", "据"]
 DROPPED_MARKERS = ["仅", "不得", "除非", "只有", "除外", "注意", "警告", "限制", "不能", "禁止"]
 HALFWIDTH_PUNCT = ",.;:?!("
@@ -36,6 +38,7 @@ SOURCE_RE = re.compile(
     r"|见\s*[「『\"']"
 )
 STRONG_EN_RE = re.compile(r"\b(?:" + "|".join(STRONG_EN) + r")\b", re.IGNORECASE)
+NORMATIVE_EN_RE = re.compile(r"\b(?:" + "|".join(NORMATIVE_EN) + r")\b", re.IGNORECASE)
 
 
 def is_cjk(ch: str) -> bool:
@@ -192,6 +195,7 @@ def check_sentence_length(lines, lang, findings):
 def check_facts(lines, lang, greenfield, findings):
     previous = ""
     strong = STRONG_EN_RE if lang == "en" else None
+    normative = NORMATIVE_EN_RE if lang == "en" else None
     for item in lines:
         if item["skip"]:
             continue
@@ -200,6 +204,12 @@ def check_facts(lines, lang, greenfield, findings):
             sentence = piece.strip()
             if not sentence:
                 continue
+            if normative:
+                norm_hits = [m.group(0) for m in normative.finditer(sentence)]
+            else:
+                norm_hits = [w for w in NORMATIVE_ZH if w in sentence]
+            for hit in dict.fromkeys(norm_hits):
+                findings.append(_finding("normative_modality", "warning", item["no"], sentence, f"规范型情态「{hit}」是要求而非事实断言，默认告警、不需要来源标记；不得新增原稿没有的要求"))
             hits = [m.group(0) for m in strong.finditer(sentence)] if strong else [w for w in STRONG_ZH if w in sentence]
             if hits:
                 context = f"{sentence}\n{previous}\n{item['raw']}"
