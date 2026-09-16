@@ -224,9 +224,6 @@ def check_punctuation(lines, lang, findings):
         if item["skip"]:
             continue
         masked = item["masked"]
-        if lang == "zh":
-            for match in re.finditer(r"\"|''", masked):
-                findings.append(_finding("quote_style", "violation", item["no"], match.group(0), "中文正文请使用「」，不要用 ASCII 直引号"))
         for index, ch in enumerate(masked):
             if ch in HALFWIDTH_PUNCT:
                 before = masked[index - 1] if index > 0 else ""
