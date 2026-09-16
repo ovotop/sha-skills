@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# Gate (design D6/8.2): docs/rules.md is the single source of truth; its copy inside
+# skills/sha-plain-docs/references/rules-zh.md must never drift silently.
+set -euo pipefail
+
+cd "$(git rev-parse --show-toplevel)"
+
+staged="$(git diff --cached --name-only --diff-filter=ACMR)"
+if ! grep -qE '^(docs/rules\.md|skills/sha-plain-docs/references/rules-zh\.md)$' <<<"$staged"; then
+  exit 0
+fi
+
+echo "pre-commit: rule table changed, checking drift ..."
+if ! python3 scripts/check_rules_drift.py; then
+  echo "pre-commit: DRIFT. Re-copy docs/rules.md into the BEGIN/END COPY region of rules-zh.md." >&2
+  exit 1
+fi

@@ -1,0 +1,22 @@
+[
+  {"query": "帮我把这份 API 接入说明重写一下，现在太啰嗦了，接入方老说看不懂", "should_trigger": true},
+  {"query": "写一份发布说明，把这次 v3.2 的改动列一下：加了批量导出、修了登录超时、废弃了旧接口", "should_trigger": true},
+  {"query": "这个报错提示太烂了：Invalid parameter: 400，帮我改成用户能看懂的写法", "should_trigger": true},
+  {"query": "我们要把订单服务从 v2 灰度切到 v3，帮我写个操作手册，注意大促期间不能做这个操作", "should_trigger": true},
+  {"query": "上线后偶发 502，帮我写个排查手册，按风险从低到高排检查项", "should_trigger": true},
+  {"query": "写段 Docker 存储驱动的选型说明，给新同事看，讲清楚各自适合什么场景", "should_trigger": true},
+  {"query": "帮我把这段技术文档改清楚点，长句太多，还有一堆赋能抓手闭环", "should_trigger": true},
+  {"query": "写个 CI 失败的排查指引，我们用的是 GitHub Actions，先查什么后查什么", "should_trigger": true},
+  {"query": "把我们这套错误码整理成文档，每个错误码说明原因和处理方式", "should_trigger": true},
+  {"query": "这份内部 Wiki 的部署章节，改写成新人能照着做的步骤，前置条件也写上", "should_trigger": true},
+  {"query": "帮我把这段产品文案改得更有吸引力，要有情绪、要能卖货", "should_trigger": false},
+  {"query": "写一份季度业务复盘 PPT 的大纲，要有数据故事，领导喜欢看", "should_trigger": false},
+  {"query": "帮我把这段话改短，我要发朋友圈", "should_trigger": false},
+  {"query": "给这个新功能起 10 个有创意的名字", "should_trigger": false},
+  {"query": "帮我翻译这段小说节选，要保留原文的文学性", "should_trigger": false},
+  {"query": "写个 Python 脚本，把这个目录下所有 CSV 合并成一个 Excel", "should_trigger": false},
+  {"query": "帮我看看这个 SQL 为什么慢，给个索引建议", "should_trigger": false},
+  {"query": "帮我写封邮件，跟同事解释一下我为什么迟到", "should_trigger": false},
+  {"query": "写个 git commit message：修了登录超时", "should_trigger": false},
+  {"query": "把这份英文 README 翻译成中文", "should_trigger": false}
+]

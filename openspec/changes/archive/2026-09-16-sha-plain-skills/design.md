@@ -70,7 +70,19 @@
 
 **决定**：
 - `sha-plain-talk` → `disable-model-invocation: true`（**仅用户显式触发**）。"上一条没讲清"是只有人类能判断的条件。**真实调用面 = 用户显式点名 / slash command**；自然语言"讲清楚点"不路由到本 skill（disable-model-invocation 语义如此，见 B2 修订）。副产品：零常驻上下文。
-  - ⚠️ **平台能力待实测**（tasks 加 smoke test）：`disable-model-invocation` 字段名、slash command 注册、OpenCode 支持度——在 SKILL.md 落地前用 smoke test 验证，不当作已定事实。
+  - ✅ **平台实测结论（2026-09-15；opencode 源码 `e03db9bc` + 两平台官方文档 + 本机二进制实证）**：
+    - **OpenCode 只解析 `name` + `description`**（gray-matter 解析后仅读这两个字段；`license/compatibility/metadata` 被容忍但不读取；未知键静默忽略）。**`disable-model-invocation` 在 OpenCode 中不存在**（全仓库零匹配）→ talk 在 OpenCode 下会进入 `<available_skills>`，模型可自行调用。
+    - **OpenCode 把每个已加载 skill 自动注册为 `/skill-name` 斜杠命令**（`command/index.ts`，`source: "skill"`；同名真命令优先）→ 用户显式调用路径成立。
+    - **OpenCode 会扫描 `.claude/skills/**/SKILL.md`**（项目目录逐级向上 + `~/.claude/skills/`）→ D7 的符号链接布局对两个 CLI 同时生效。
+    - **Claude Code：`disable-model-invocation: true` 一等支持**（用户专属、描述不进上下文、阻断 Skill 工具调用、禁止子代理预加载）。
+    - 结论：talk 的"仅用户触发"在 Claude Code 成立；OpenCode 需回退路径（2.4 决定，见下）。
+    - **2.4 回退方案：模仿 mattpocock/wait-what 的 user-invoked 模式**（该 skill 场景与本 skill 相同，实证：`skills/productivity/wait-what/SKILL.md` @`3cca18b` 用 `disable-model-invocation: true` + **保留 description 但改成"面向人、不含触发词"的一句话**）。落到本 change：
+      1. `disable-model-invocation: true` 保留（Claude Code 一等生效）；
+      2. description **剥离触发词**（不写"当用户…时使用"），只留人面向一句话——这样在不认该字段的 harness（OpenCode）上**不会因触发短语自动激活**，属"优雅降级"层；
+      3. 正文首段仍显式声明「只在用户显式调用时进入」作为第二层兜底；
+      4. **不为 OpenCode 引入 sidecar 文件**（mattpocock 为 Codex 写了 `agents/openai.yaml` 的 `policy.allow_implicit_invocation: false`；OpenCode 无对应 per-skill 机制，引入空文件无收益）——诚实承认 OpenCode 下无法机制强制，只做降级。
+    - 依据（mattpocock 的规则原文）："Pick model-invocation only when the agent must reach the skill on its own… If it only ever fires by hand, make it user-invoked and pay no context load."（`skills/productivity/writing-for-agents/SKILL-MECHANICS.md` L12）+ "Keep the two in sync: a skill is user-invoked in both harnesses or neither."（`.agents/invocation.md` L10）
+    - 已知代价（mattpocock 自陈 bug）：user-invoked skill 会被排除出注入给模型的 skill 列表，模型可能报"该技能不存在"——本 skill 可接受（它只由人调用）。
 - `sha-plain-docs` → **模型可自动触发**（省略该字段）。"写文档时该用受控结构"是模型可判断的任务类型。代价：description 常驻 → 压到 <60 词。
   - **双重分类风险显式化（S4）**：自动触发后**两层分类都要做对**——(a) 是不是文档任务？(b) 是哪种适用强度？正文第一步 MUST 做显式判定，拿不准问用户；两层各配一个 eval 用例。
 
@@ -178,6 +190,14 @@ skills/sha-plain-docs/     # 模型可自动触发 · 正文 ~100 行
 **理由**：机械拦截"情态变没变"会误伤合法升级——用户提供新证据后收紧语态是**正确行为**。判据从"变了没"改为"**没证据却变硬了**"。"保留事实"的红线本质是"只输出有依据的内容"——有依据的升级=事实，无依据的升级=篡改。此决定是 D5 结构层检查（强断言必须有来源）的语义层配套：脚本保证"带没带标记"，本原则保证"标记背后有没有真依据"。
 
 **执行**：写入两个 SKILL.md 的写作协议（约 6 行）：每个确定性表述前自问——依据在吗（对话/文档/模型稳定知识）？有且可核对→强语态且来源入句；有但不便标注（模型知识）→可强语态；无依据但能定性为推测→降级弱语态；无依据且无法定性→删除。
+
+## 评估结果（实现期追加 · 详见 `docs/evals.md`）
+
+- **iteration-1（12 例 × 2 配置）**：`sha-plain-docs` **98.5% vs 63.5%（+0.35）**；`sha-plain-talk` 83.3% vs 90.5%（**−0.07**）。
+- talk 的负 delta **不是设计错误，全部来自 skill 自身措辞缺陷**（输出模板诱导 `细节：…` 元注释尾段、自检缺 `相关`/`该` 示例、内核表漏写"总长超 40 一律违规"、黑话替换丢 `抓手` 语义）；docs 唯一缺陷是小节标题为名词标签。
+- **iteration-2/3（只复跑受影响用例，复用 baseline）**：6/6 用例修复后 `check_plain.py` **0 违规**；docs 改写用例的 `--source` 删改对比两轮都抓到并修复了 `dropped_warning`。
+- **触发评估**（`claude` CLI 不可用 → 批量判断替代 `run_loop.py`）：docs **20/20**；talk **9/10**，唯一误触发＝「没听懂，你能讲清楚点吗？」。
+  - → Claude Code 由 `disable-model-invocation` 保证用户专属；**OpenCode 下无法机制强制**（该字段不被解析），与 wait-what 有相同暴露面，**接受并记录**（见 D3）。
 
 ## Risks / Trade-offs
 
