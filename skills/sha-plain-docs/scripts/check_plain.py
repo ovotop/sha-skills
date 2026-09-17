@@ -137,6 +137,7 @@ def collect_lines(text: str):
     front_seen = False
     in_front = False
     in_code = False
+    ref_def_re = re.compile(r"^\[[^\]]+\]:\s+\S+")
     for number, raw in enumerate(text.split("\n"), start=1):
         stripped = raw.strip()
         if number == 1 and stripped == "---":
@@ -152,7 +153,7 @@ def collect_lines(text: str):
             in_code = not in_code
             lines.append({"no": number, "raw": raw, "skip": True})
             continue
-        if in_code or stripped.startswith("|") or not stripped:
+        if in_code or stripped.startswith("|") or not stripped or ref_def_re.match(stripped):
             lines.append({"no": number, "raw": raw, "skip": True})
             continue
         masked = mask_line(raw)
