@@ -33,7 +33,7 @@ CLAUSE_SPLIT = re.compile(r"[，、]")
 SOURCE_RE = re.compile(
     r"(?:[（(][^）)]{0,40}(?:" + "|".join(SOURCE_STEMS) + r")[^）)]{0,40}[）)])"
     r"|(?:" + "|".join(SOURCE_STEMS) + r")\s*\S"
-    r"|见\s*[「『\"']"
+    r"|见\s*[「『“\"']"
 )
 STRONG_EN_RE = re.compile(r"\b(?:" + "|".join(STRONG_EN) + r")\b", re.IGNORECASE)
 NORMATIVE_EN_RE = re.compile(r"\b(?:" + "|".join(NORMATIVE_EN) + r")\b", re.IGNORECASE)
@@ -98,7 +98,7 @@ def apply_entries(entries, line_text, is_en, allow_intervals, lineno, findings):
         for match in pattern.finditer(line_text):
             if _inside_allowlist(match.start(), match.end(), allow_intervals):
                 continue
-            findings.append(_finding("banned_word", "violation", lineno, match.group(0), f"禁用词「{label}」，请改为平实表达"))
+            findings.append(_finding("banned_word", "violation", lineno, match.group(0), f"禁用词“{label}”，请改为平实表达"))
     for label, section in entries[0]:
         if ("英文" in section) != is_en:
             continue
@@ -110,7 +110,7 @@ def apply_entries(entries, line_text, is_en, allow_intervals, lineno, findings):
         span = len(needle)
         while start != -1:
             if not _inside_allowlist(start, start + span, allow_intervals):
-                findings.append(_finding("banned_word", "violation", lineno, line_text[start:start + span], f"禁用词「{label}」，请改为平实表达"))
+                findings.append(_finding("banned_word", "violation", lineno, line_text[start:start + span], f"禁用词“{label}”，请改为平实表达"))
             start = haystack.find(needle, start + 1)
 
 
@@ -205,7 +205,7 @@ def check_facts(lines, lang, greenfield, findings):
                 continue
             norm_hits = [m.group(0) for m in normative.finditer(sentence)] if normative else [w for w in NORMATIVE_ZH if w in sentence]
             for hit in dict.fromkeys(norm_hits):
-                findings.append(_finding("normative_modality", "warning", item["no"], sentence, f"规范型情态「{hit}」是要求而非事实断言，默认告警、不需要来源标记；不得新增原稿没有的要求"))
+                findings.append(_finding("normative_modality", "warning", item["no"], sentence, f"规范型情态“{hit}”是要求而非事实断言，默认告警、不需要来源标记；不得新增原稿没有的要求"))
             hits = [m.group(0) for m in strong.finditer(sentence)] if strong else [w for w in STRONG_ZH if w in sentence]
             if hits:
                 context = f"{sentence}\n{previous}\n{item['raw']}"
@@ -230,6 +230,28 @@ def check_punctuation(lines, lang, findings):
                     findings.append(_finding("missing_cjk_latin_space", "violation", item["no"], f"{ch}{after}", "中文与英文/数字之间请加一个空格"))
 
 
+CORNER_QUOTES = ("「", "」", "『", "』")
+
+
+def check_corner_quotes(lines, lang, findings):
+    if lang != "zh":
+        return
+    for item in lines:
+        if item["skip"]:
+            continue
+        for index, ch in enumerate(item["masked"]):
+            if ch in CORNER_QUOTES:
+                findings.append(
+                    _finding(
+                        "corner_quotes_in_zh",
+                        "violation",
+                        item["no"],
+                        ch,
+                        "简体中文正文请使用弯引号“ ”/‘ ’，不要使用直角引号「」『』（日文与繁体竖排风格，简体中文正文呈日文感）",
+                    )
+                )
+
+
 def normalize_for_compare(text: str) -> str:
     return "".join(ch for ch in text if is_cjk(ch) or ch.isalnum())
 
@@ -250,7 +272,7 @@ def check_source_diff(source_text, output_text, findings):
         kept = out_norm.count(marker)
         for index in range(kept, len(src_occurrences)):
             _, _, number, raw = src_occurrences[index]
-            findings.append(_finding("dropped_warning", "violation", number, raw.strip(), f"删改对比（尽力而为）：原稿的警告/限制词「{marker}」在输出中消失"))
+            findings.append(_finding("dropped_warning", "violation", number, raw.strip(), f"删改对比（尽力而为）：原稿的警告/限制词“{marker}”在输出中消失"))
 
 
 def run(args):
@@ -275,6 +297,7 @@ def run(args):
     check_sentence_length(lines, args.lang, findings)
     check_facts(lines, args.lang, args.greenfield, findings)
     check_punctuation(lines, args.lang, findings)
+    check_corner_quotes(lines, args.lang, findings)
     for item in lines:
         if item["skip"]:
             continue

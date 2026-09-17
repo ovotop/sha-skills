@@ -9,7 +9,7 @@
   {"query": "总结一下我们刚才聊的要点", "should_trigger": false, "reason": "总结 ≠ 重讲上一条"},
   {"query": "帮我把这段文档写清楚，给接入方看", "should_trigger": false, "reason": "跨技能竞争：这是文档写作任务，应路由到 sha-plain-docs"},
   {"query": "你刚才提到的那个函数叫什么名字？", "should_trigger": false, "reason": "澄清性提问"},
-  {"query": "太长了，能不能说短点？", "should_trigger": false, "reason": "近邻反例：长度偏好而非理解困惑；talk 重讲「没讲清」，不管「太长」"},
+  {"query": "太长了，能不能说短点？", "should_trigger": false, "reason": "近邻反例：长度偏好而非理解困惑；talk 重讲“没讲清”，不管“太长”"},
   {"query": "重新回答一遍，这次用英文", "should_trigger": false, "reason": "近邻反例：语言切换请求"},
   {"query": "解释一下刚才那段代码在做什么", "should_trigger": false, "reason": "解释请求，非重讲"}
 ]
