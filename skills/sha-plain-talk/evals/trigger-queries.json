@@ -1,12 +1,15 @@
 [
+  {"query": "你说啥？", "should_trigger": true, "reason": "2026-09-17 触发再设计：design-in 触发词，对上一条回复的困惑"},
+  {"query": "没听懂，你能讲清楚点吗？", "should_trigger": true, "reason": "2026-09-17 触发再设计：原误触发反例翻转为正确触发，自然语言困惑短语改为设计内触发"},
+  {"query": "什么意思？我没明白", "should_trigger": true, "reason": "困惑短语"},
+  {"query": "再说一遍", "should_trigger": true, "reason": "design-in 触发词：对上一条回复的困惑"},
   {"query": "帮我看看这个 bug 怎么修，日志里有个 NullPointerException", "should_trigger": false, "reason": "新请求，不是重讲上一条"},
-  {"query": "没听懂，你能讲清楚点吗？", "should_trigger": false, "reason": "spec 场景 2：自然语言表达\"没听懂\"不构成对本技能的调用，必须显式点名"},
   {"query": "这个报错是什么意思？", "should_trigger": false, "reason": "新问题"},
   {"query": "继续刚才那个方案，把第三步展开讲讲", "should_trigger": false, "reason": "继续/展开，不是重讲"},
   {"query": "总结一下我们刚才聊的要点", "should_trigger": false, "reason": "总结 ≠ 重讲上一条"},
   {"query": "帮我把这段文档写清楚，给接入方看", "should_trigger": false, "reason": "跨技能竞争：这是文档写作任务，应路由到 sha-plain-docs"},
   {"query": "你刚才提到的那个函数叫什么名字？", "should_trigger": false, "reason": "澄清性提问"},
-  {"query": "太长了，能不能说短点？", "should_trigger": false, "reason": "近邻反例：口语化的缩略请求，按 spec 不由描述自动路由，需用户点名"},
+  {"query": "太长了，能不能说短点？", "should_trigger": false, "reason": "近邻反例：长度偏好而非理解困惑；talk 重讲「没讲清」，不管「太长」"},
   {"query": "重新回答一遍，这次用英文", "should_trigger": false, "reason": "近邻反例：语言切换请求"},
   {"query": "解释一下刚才那段代码在做什么", "should_trigger": false, "reason": "解释请求，非重讲"}
 ]

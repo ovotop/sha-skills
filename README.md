@@ -8,7 +8,7 @@
 
 | 技能 | 什么时候用 | 怎么触发 | 做什么 |
 |------|-----------|---------|--------|
-| sha-plain-talk | 对话里没听懂 | 你输入 `/sha-plain-talk` | 重讲上一条回复 |
+| sha-plain-talk | 对话里没听懂 | 「你说啥」「没听懂」等困惑短语自动触发，也可输入 `/sha-plain-talk` | 重讲上一条回复 |
 | sha-plain-docs | 文档不合格 | 模型自动触发 | 按规则重写并跑脚本验证 |
 
 **talk 管对话**：首句给结论，最多三点支撑。不加「我已重讲」这类元注释。
@@ -68,7 +68,7 @@ ln -s ../../skills/sha-plain-docs .claude/skills/sha-plain-docs
 
 **使用**：
 
-- 对话没听懂 → 输入 `/sha-plain-talk`
+- 对话没听懂 → 说「你说啥」「没听懂」即自动重讲，也可输入 `/sha-plain-talk`
 - 写技术文档 → sha-plain-docs 自动触发
 
 ## 目录结构

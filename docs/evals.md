@@ -91,3 +91,21 @@
 | docs eval-6 错误提示 | exit 0，0 violations（绿场 `--greenfield`，0 warnings） | `Invalid parameter: 400` 仅作为原消息引用，输出为展开模板（参数名+错误码+下一步），无「无效的参数」机械直译 | **P4 期望修正验证通过**（bare 标签单独成句才算违规的新边界成立） |
 
 **触发面影响**：P1 让改写场景的规范句（"用户必须配置超时时间"）不再被迫加来源标记；"警告/限制/例外保护性保留"与 `--source` 删改对比不受影响（D-F-1 边界：新增要求的语义层兜底不变）。
+
+## 触发再设计（2026-09-17，「你说啥」触发 talk）
+
+**背景**：触发评估（iteration-1）显示 talk 唯一"误触发"＝「没听懂，你能讲清楚点吗？」，当时沿用 user-invoked 模式接受该暴露面（P2）。但 OpenCode 不解析 `disable-model-invocation`，用户实际说「你说啥」时模型本就会自动调用本技能——旧设计等于"默认行为 vs 文档声明"不一致。
+
+**新决策（用户拍板）**：把自然语言困惑短语从"暴露面"转为**设计内触发**：
+
+- **talk**：移除 `disable-model-invocation: true`（Claude Code 侧不再拦）；description 新增触发词「你说啥」「没听懂」「没明白」「什么意思」「再说一遍」「没看懂/没看清」，并对「重新回答一遍」「这次用英文」等重做/语言切换请求显式排除；正文触发规则改为"显式调用 **或** 困惑短语 → 进入重讲"，**新问题/新请求仍不进入**。
+- **docs**：description 扩充触发面（README、release notes、错误消息文案、隐式表达如"帮我写个配置说明"），强化自动触发。
+
+**复跑验证（批量判断法，同 iteration-1 方法：给 judge 每条 skill 的 name+description 与 trigger-queries.json，逐条判会不会自动触发）**：
+
+| skill | 准确率 | 结果 |
+|---|---|---|
+| sha-plain-docs | **20/20** | 10 应触发全部命中，10 近邻反例全部正确拒绝（同 iteration-1） |
+| sha-plain-talk | 首轮 **12/13** → 加排除边界后 **13/13** | 首轮近邻误触发＝「重新回答一遍，这次用英文」（语义近触发词「再说一遍」，实为重做/语言切换）；description 补排除句后复跑通过 |
+
+**一致性更新**：`openspec/specs/sha-plain-talk/spec.md`《触发重讲》改写（自然语言困惑自动路由替代"不被自动路由"，非重讲场景补重做/语言切换反例）；`trigger-queries.json` 翻转 1 条反例并新增 3 条正例；README 表格与使用段落同步；`docs/evals.md` 追加本记录。
