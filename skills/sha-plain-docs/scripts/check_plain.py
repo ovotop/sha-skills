@@ -180,14 +180,14 @@ def check_sentence_length(lines, lang, findings):
             else:
                 count = char_len(sentence)
                 if count > 40:
-                    findings.append(_finding("sentence_too_long", "violation", item["no"], sentence, f"单句 {count} 字，超过 40 字上限，请拆分"))
+                    findings.append(_finding("sentence_too_long", "violation", item["no"], sentence, f"单句 {count} 字，超过 40 字上限。优先改句式：拆句 / 缩短修饰。禁止为过检删除关键宾语、条件或否定。"))
                 elif 30 <= count <= 39 and not CLAUSE_SPLIT.search(sentence):
                     findings.append(_finding("sentence_needs_review", "info", item["no"], sentence, "需确认语义明确（30–39 字）"))
                 if CLAUSE_SPLIT.search(sentence):
                     for clause in CLAUSE_SPLIT.split(sentence):
                         clause = clause.strip()
                         if char_len(clause) > 20:
-                            findings.append(_finding("clause_too_long", "violation", item["no"], clause, f"逗号构件 {char_len(clause)} 字，超过 20 字上限，请拆分"))
+                            findings.append(_finding("clause_too_long", "warning", item["no"], clause, f"逗号构件 {char_len(clause)} 字（目标 ≤20）。优先改句式：拆句 / 去掉不必要逗号 / 缩短修饰。禁止为过检删除关键宾语、条件或否定。"))
     return
 
 
